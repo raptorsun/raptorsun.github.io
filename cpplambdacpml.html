@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="english">
+
+<head>
+      <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+  <title>How C++ Lambda Function Is Compiled</title>
+
+
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="origin" />
+  <meta name="generator" content="Pelican" />
+  <link href="https://raptorsun.github.io" rel="canonical" />
+
+  <!-- Feed -->
+
+  <link href="https://raptorsun.github.io/theme/css/style.css" type="text/css" rel="stylesheet" />
+
+  <!-- Code highlight color scheme -->
+      <link href="https://raptorsun.github.io/theme/css/code_blocks/github.css" rel="stylesheet">
+
+
+  <!-- Custom fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,300' rel='stylesheet' type='text/css' />
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+
+    <link href="https://raptorsun.github.io/cpplambdacpml.html" rel="canonical" />
+
+        <meta name="description" content="Lambda function is a convenient way of defining an anonymous function in the place where it is invoked or assigned as an argurment or...">
+
+        <meta name="author" content="Haoyu Sun">
+
+
+        <meta property="og:locale" content="" />
+    <meta property="og:site_name" content="Bobcat" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Bobcat" />
+    <meta property="og:description" content="View the blog." />
+    <meta property="og:url" content="https://raptorsun.github.io" />
+      <meta name="og:image" content="https://raptorsun.github.io/theme/images/post-bg.jpg">
+
+  <meta property="og:type" content="article">
+            <meta property="article:author" content="https://raptorsun.github.io/author/haoyu-sun.html">
+  <meta property="og:url" content="https://raptorsun.github.io/cpplambdacpml.html">
+  <meta property="og:title" content="How C++ Lambda Function Is Compiled">
+  <meta property="article:published_time" content="2019-06-17 00:00:00+02:00">
+            <meta property="og:description" content="Lambda function is a convenient way of defining an anonymous function in the place where it is invoked or assigned as an argurment or...">
+
+            <meta property="og:image" content="https://raptorsun.github.io/theme/images/post-bg.jpg">
+</head>
+<!-- TODO : Body class -->
+<body class="home-template">
+
+<nav id="menu">
+  <a class="close-button">Close</a>
+  <div class="nav-wrapper">
+    <p class="nav-label">Menu</p>
+    <ul>
+
+                  <li class="nav-c active" role="presentation"><a href="https://raptorsun.github.io/category/c.html">C++</a></li>
+
+    </ul>
+  </div>
+</nav>
+    <!-- Progressbar -->
+    <div class="progress-container">
+        <span class="progress-bar"></span>
+    </div>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header id="post-header" class="has-cover">
+      <div class="inner">
+        <nav id="navigation">
+            <span class="blog-logo">
+                <a href="https://raptorsun.github.io"><img src="/images/LynxMini.png" alt="Blog Logo" /></a>
+            </span>
+          <span id="menu-button" class="nav-button">
+            <a class="menu-button"><i class="ic ic-menu"></i> Menu</a>
+          </span>
+        </nav>
+        <h1 class="post-title">How C++ Lambda Function Is Compiled</h1>
+        <!-- TODO : Proper class for headline -->
+        <span class="post-meta">
+                <a href="https://raptorsun.github.io/author/haoyu-sun.html">Haoyu sun</a>
+            | <time datetime="Mon 17 June 2019">Mon 17 June 2019</time>
+        </span>
+        <!-- TODO : Modified check -->
+            <span class="post-meta"> | Updated on Mon 17 June 2019</span>
+        
+            <div class="post-cover cover" style="background-image: url('https://raptorsun.github.io/theme/images/post-bg.jpg')">
+        
+      </div>
+    </header>    
+
+  <section id="wrapper">
+    <a class="hidden-close"></a>
+
+    <!-- Post content -->
+    <main class="content" role="main">
+        <article class="post">
+        <div class="inner">
+            <section class="post-content">
+                <p><a href="https://en.cppreference.com/w/cpp/language/lambda">Lambda function</a> is a convenient way of defining an anonymous function in the place where it is invoked or assigned as an argurment or variable.  It is largely used to pass a short stateless function to an algorithm (comparison to sort algorithm), and as a callback from asynchronous methods. I wonder how lambda functions are compiled. Are they functions with a random name? Are they inline functions expressing simple logics?</p>
+<p>Lets start with a minimalistic case.</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="p">[]()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">6</span><span class="p">;</span>
+    <span class="p">}</span> <span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>It calls a lambda function which does nothing else than returning an integer 6. The corresponding assembly shows that these codes generate 2 functions: the main and the lambda function.</p>
+<div class="highlight"><pre><span></span>    <span class="na">.section</span>    <span class="no">__TEXT</span><span class="p">,</span><span class="no">__text</span><span class="p">,</span><span class="no">regular</span><span class="p">,</span><span class="no">pure_instructions</span>
+    <span class="na">.build_version</span> <span class="no">macos</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">14</span>    <span class="no">sdk_version</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">14</span>
+    <span class="na">.globl</span>  <span class="no">_main</span>                   <span class="c">## -- Begin function main</span>
+    <span class="na">.p2align</span>    <span class="mi">4</span><span class="p">,</span> <span class="mi">0x90</span>
+<span class="nl">_main:</span>                                  <span class="c">## @main</span>
+    <span class="na">.cfi_startproc</span>
+<span class="c">## %bb.0:</span>
+    <span class="nf">pushq</span>   <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="nf">subq</span>    <span class="no">$32</span><span class="p">,</span> <span class="nv">%rsp</span>
+    <span class="nf">movl</span>    <span class="no">$0</span><span class="p">,</span> <span class="p">-</span><span class="mi">4</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movl</span>    <span class="nv">%edi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movq</span>    <span class="nv">%rsi</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">leaq</span>    <span class="p">-</span><span class="mi">24</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rdi</span>
+    <span class="nf">callq</span>   <span class="no">__ZZ4mainENK3$_0clEv</span>
+    <span class="nf">addq</span>    <span class="no">$32</span><span class="p">,</span> <span class="nv">%rsp</span>
+    <span class="nf">popq</span>    <span class="nv">%rbp</span>
+    <span class="nf">retq</span>
+    <span class="na">.cfi_endproc</span>
+                                        <span class="c">## -- End function</span>
+    <span class="na">.p2align</span>    <span class="mi">4</span><span class="p">,</span> <span class="mi">0x90</span>         <span class="c">## -- Begin function _ZZ4mainENK3$_0clEv  (lambda function)</span>
+<span class="nl">__ZZ4mainENK3$_0clEv:</span>                   <span class="c">## @&quot;_ZZ4mainENK3$_0clEv&quot;</span>
+    <span class="na">.cfi_startproc</span>
+<span class="c">## %bb.0:</span>
+    <span class="nf">pushq</span>   <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="nf">movq</span>    <span class="nv">%rdi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movl</span>    <span class="no">$6</span><span class="p">,</span> <span class="nv">%eax</span>
+    <span class="nf">popq</span>    <span class="nv">%rbp</span>
+    <span class="nf">retq</span>
+    <span class="na">.cfi_endproc</span>
+                                        <span class="c">## -- End function</span>
+
+<span class="na">.subsections_via_symbols</span>
+</pre></div>
+
+
+<p>The "anonymous" function does have a name, which is _ZZ4mainENK3$_0clEv. Let's demangle it to see what does it mean.</p>
+<div class="highlight"><pre><span></span>➜  lambda_cpp nm lambda.out | c++filt
+0000000100000fa0 unsigned short main::$_0::operator()() const
+0000000100000000 T __mh_execute_header
+0000000100000f70 T _main
+                 U dyld_stub_binder
+</pre></div>
+
+
+<p>It is defined as a const function under the namespace of "main", returing an unsigned short, which is obviously deduced from the constant "6". The name "$_0::operator()()" seems like a wrapper class "$0" with a function "operator()()". The name $_0 may suggest a auto-increasing key for each lambda function in the same scope. Lets try define multiple lambda function and see how they are named.</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="k">auto</span> <span class="n">funcA</span> <span class="o">=</span> <span class="p">[]()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="k">auto</span> <span class="n">funcB</span> <span class="o">=</span> <span class="p">[]()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="k">auto</span> <span class="n">funcC</span> <span class="o">=</span> <span class="p">[]()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">3</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="k">return</span> <span class="n">funcA</span><span class="p">()</span> <span class="o">+</span> <span class="n">funcB</span><span class="p">()</span> <span class="o">+</span> <span class="n">funcC</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>This time we got main::$_[0-2]::operator()() functions. That wrapper class is in fact a number. The naming convention is under the namespace where it is defined, a wrapper class with an increasing number to disinguish one from another, then the function itself "operator ()" with its arguments' list.</p>
+<div class="highlight"><pre><span></span>0000000100000f80 unsigned short main::$_0::operator()() const
+0000000100000f90 unsigned short main::$_1::operator()() const
+0000000100000fa0 unsigned short main::$_2::operator()() const
+</pre></div>
+
+
+<p>Now let's try adding parameters into the lambda function, starting with the capture clause "[]". We put a local variable into the capture clause so that it can be used inside the lambda function. In this example we use the copy capture clause, which is the default behavior.</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">var</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
+    <span class="k">auto</span> <span class="n">funcA</span> <span class="o">=</span> <span class="p">[</span><span class="o">=</span><span class="p">]()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">var</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="k">return</span> <span class="n">funcA</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>From the output code we can see in this case it is exactly the same sequence as a regular function call: copy local variable into stack, move the stack upward and then call the function.</p>
+<div class="highlight"><pre><span></span>    <span class="nf">movl</span>    <span class="no">$7</span><span class="p">,</span> <span class="p">-</span><span class="mi">20</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movl</span>    <span class="p">-</span><span class="mi">20</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%edi</span>
+    <span class="nf">movl</span>    <span class="nv">%edi</span><span class="p">,</span> <span class="p">-</span><span class="mi">24</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">leaq</span>    <span class="p">-</span><span class="mi">24</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rdi</span>
+    <span class="nf">callq</span>   <span class="no">__ZZ4mainENK3$_0clEv</span>
+</pre></div>
+
+
+<p>Meanwhile in lambda function has just a normal function body, getting the argument from stack and copy it into the return register.</p>
+<div class="highlight"><pre><span></span>    <span class="na">.p2align</span>    <span class="mi">4</span><span class="p">,</span> <span class="mi">0x90</span>         <span class="c">## -- Begin function _ZZ4mainENK3$_0clEv</span>
+<span class="nl">__ZZ4mainENK3$_0clEv:</span>                   <span class="c">## @&quot;_ZZ4mainENK3$_0clEv&quot;</span>
+    <span class="na">.cfi_startproc</span>
+<span class="c">## %bb.0:</span>
+    <span class="nf">pushq</span>   <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="nf">movq</span>    <span class="nv">%rdi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movq</span>    <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rdi</span>
+    <span class="nf">movl</span>    <span class="p">(</span><span class="nv">%rdi</span><span class="p">),</span> <span class="nv">%eax</span>
+    <span class="nf">popq</span>    <span class="nv">%rbp</span>
+    <span class="nf">retq</span>
+    <span class="na">.cfi_endproc</span>
+                                        <span class="c">## -- End function</span>
+</pre></div>
+
+
+<p>By changing the capture clause to reference mode, we get almost the same code but this time it is the address of variable pushed into the stack.</p>
+<div class="highlight"><pre><span></span>    <span class="k">auto</span> <span class="n">funcA</span> <span class="o">=</span> <span class="p">[</span><span class="o">=</span><span class="p">]()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">var</span><span class="p">;</span>
+    <span class="p">};</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>    <span class="na">...</span>
+    <span class="nf">movl</span>    <span class="no">$7</span><span class="p">,</span> <span class="p">-</span><span class="mi">20</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">leaq</span>    <span class="p">-</span><span class="mi">20</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rsi</span>     <span class="c">## address of &quot;var&quot; into %rsi</span>
+    <span class="nf">movq</span>    <span class="nv">%rsi</span><span class="p">,</span> <span class="p">-</span><span class="mi">32</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">leaq</span>    <span class="p">-</span><span class="mi">32</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rdi</span>
+    <span class="nf">callq</span>   <span class="no">__ZZ4mainENK3$_0clEv</span>
+    <span class="na">...</span>
+
+    <span class="na">.p2align</span>    <span class="mi">4</span><span class="p">,</span> <span class="mi">0x90</span>         <span class="c">## -- Begin function _ZZ4mainENK3$_0clEv</span>
+<span class="nl">__ZZ4mainENK3$_0clEv:</span>                   <span class="c">## @&quot;_ZZ4mainENK3$_0clEv&quot;</span>
+    <span class="na">.cfi_startproc</span>
+<span class="c">## %bb.0:</span>
+    <span class="nf">pushq</span>   <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="nf">movq</span>    <span class="nv">%rdi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movq</span>    <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rdi</span>
+    <span class="nf">movq</span>    <span class="p">(</span><span class="nv">%rdi</span><span class="p">),</span> <span class="nv">%rdi</span>
+    <span class="nf">movl</span>    <span class="p">(</span><span class="nv">%rdi</span><span class="p">),</span> <span class="nv">%eax</span>
+    <span class="nf">popq</span>    <span class="nv">%rbp</span>
+    <span class="nf">retq</span>
+    <span class="na">.cfi_endproc</span>
+                                        <span class="c">## -- End function</span>
+</pre></div>
+
+
+<p>Now let's try constexpr on lambda expression. The constexpr objects will be evaluated during compilation time and reduced to a constant in the final code. Let's see.</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="k">auto</span> <span class="n">funcA</span> <span class="o">=</span> <span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="kt">int</span> <span class="n">a</span><span class="p">)</span> <span class="k">constexpr</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">3</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="k">constexpr</span> <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">funcA</span><span class="p">(</span><span class="mi">7</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>The lambda function is decalred as constexpr, thus during compilation time, the result of funcA(7) can be calculated as 10. The code is then equivalent to:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="k">constexpr</span> <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>That leads to an integer 10 in stack <code>movl $10, -28(%rbp)</code> and a direct return of 10 <code>movl  $10, %eax</code>:</p>
+<div class="highlight"><pre><span></span>    <span class="na">.section</span>    <span class="no">__TEXT</span><span class="p">,</span><span class="no">__text</span><span class="p">,</span><span class="no">regular</span><span class="p">,</span><span class="no">pure_instructions</span>
+    <span class="na">.build_version</span> <span class="no">macos</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">14</span>    <span class="no">sdk_version</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">14</span>
+    <span class="na">.globl</span>  <span class="no">_main</span>                   <span class="c">## -- Begin function main</span>
+    <span class="na">.p2align</span>    <span class="mi">4</span><span class="p">,</span> <span class="mi">0x90</span>
+<span class="nl">_main:</span>                                  <span class="c">## @main</span>
+    <span class="na">.cfi_startproc</span>
+<span class="c">## %bb.0:</span>
+    <span class="nf">pushq</span>   <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="nf">movl</span>    <span class="no">$0</span><span class="p">,</span> <span class="p">-</span><span class="mi">4</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movl</span>    <span class="nv">%edi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movq</span>    <span class="nv">%rsi</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movl</span>    <span class="no">$10</span><span class="p">,</span> <span class="p">-</span><span class="mi">28</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+    <span class="nf">movl</span>    <span class="no">$10</span><span class="p">,</span> <span class="nv">%eax</span>
+    <span class="nf">popq</span>    <span class="nv">%rbp</span>
+    <span class="nf">retq</span>
+    <span class="na">.cfi_endproc</span>
+                                        <span class="c">## -- End function</span>
+
+<span class="na">.subsections_via_symbols</span>
+</pre></div>
+            </section>
+
+            <section class="post-info">
+                <div class="post-share">
+                    <a class="twitter" href="https://twitter.com/share?text=How C++ Lambda Function Is Compiled&amp;url=https://raptorsun.github.io/cpplambdacpml.html" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="ic ic-twitter"></i><span class="hidden">Twitter</span>
+                    </a>
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://raptorsun.github.io/cpplambdacpml.html" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="ic ic-facebook"></i><span class="hidden">Facebook</span>
+                    </a>
+                    <a class="googleplus" href="https://plus.google.com/share?url=https://raptorsun.github.io/cpplambdacpml.html" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="ic ic-googleplus"></i><span class="hidden">Google+</span>
+                    </a>
+                    <div class="clear"></div>
+                </div>
+
+
+                <div class="clear"></div>
+
+ 
+
+                </section>
+
+
+                <aside class="post-nav">
+                    <div class="clear"></div>
+                </aside>
+
+            </div>
+        </article>
+    </main>
+      <!-- TODO : Body class -->
+    <div id="body-class" style="display: none;" class=""></div>
+  
+    <footer id="footer">
+      <div class="inner">
+        <section class="credits">
+          <span class="credits-theme">Theme <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a></span>
+          <span class="credits-software">Published with <a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a></span>
+        </section>
+      </div>
+    </footer>
+  </section>
+
+  <script type="text/javascript" src="https://raptorsun.github.io/theme/js/script.js"></script>
+  
+</body>
+</html>
