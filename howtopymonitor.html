@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+      <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+  <title>How To Make a Log Monitor</title>
+
+
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="origin" />
+  <meta name="generator" content="Pelican" />
+  <link href="https://raptorsun.github.io" rel="canonical" />
+
+  <!-- Feed -->
+        <link href="https://raptorsun.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Bobcat Full Atom Feed" />
+          <link href="https://raptorsun.github.io/feeds/python.atom.xml" type="application/atom+xml" rel="alternate" title="Bobcat Categories Atom Feed" />
+
+  <link href="https://raptorsun.github.io/theme/css/style.css" type="text/css" rel="stylesheet" />
+
+  <!-- Code highlight color scheme -->
+      <link href="https://raptorsun.github.io/theme/css/code_blocks/github.css" rel="stylesheet">
+
+
+  <!-- Custom fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,300' rel='stylesheet' type='text/css' />
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+
+    <link href="https://raptorsun.github.io/howtopymonitor.html" rel="canonical" />
+
+        <meta name="description" content="Monitoring on log files is useful for overseeing application status and allows operators take neccessary actions to prevent incidents....">
+
+        <meta name="author" content="Haoyu Sun">
+
+
+        <meta property="og:locale" content="" />
+    <meta property="og:site_name" content="Bobcat" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Bobcat" />
+    <meta property="og:description" content="View the blog." />
+    <meta property="og:url" content="https://raptorsun.github.io" />
+      <meta name="og:image" content="https://raptorsun.github.io/theme/images/post-bg.jpg">
+
+  <meta property="og:type" content="article">
+            <meta property="article:author" content="https://raptorsun.github.io/author/haoyu-sun.html">
+  <meta property="og:url" content="https://raptorsun.github.io/howtopymonitor.html">
+  <meta property="og:title" content="How To Make a Log Monitor">
+  <meta property="article:published_time" content="2019-12-08 00:00:00+01:00">
+            <meta property="og:description" content="Monitoring on log files is useful for overseeing application status and allows operators take neccessary actions to prevent incidents....">
+
+            <meta property="og:image" content="https://raptorsun.github.io/theme/images/post-bg.jpg">
+</head>
+<!-- TODO : Body class -->
+<body class="home-template">
+
+<nav id="menu">
+  <a class="close-button">Close</a>
+  <div class="nav-wrapper">
+    <p class="nav-label">Menu</p>
+    <ul>
+
+                  <li role="presentation"><a href="https://raptorsun.github.io/category/c.html">C++</a></li>
+                  <li class="nav-python active" role="presentation"><a href="https://raptorsun.github.io/category/python.html">Python</a></li>
+
+    </ul>
+  </div>
+</nav>
+    <!-- Progressbar -->
+    <div class="progress-container">
+        <span class="progress-bar"></span>
+    </div>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header id="post-header" class="has-cover">
+      <div class="inner">
+        <nav id="navigation">
+            <span class="blog-logo">
+                <a href="https://raptorsun.github.io"><img src="/images/LynxMini.png" alt="Blog Logo" /></a>
+            </span>
+          <span id="menu-button" class="nav-button">
+            <a class="menu-button"><i class="ic ic-menu"></i> Menu</a>
+          </span>
+        </nav>
+        <h1 class="post-title">How To Make a Log Monitor</h1>
+        <!-- TODO : Proper class for headline -->
+        <span class="post-meta">
+                <a href="https://raptorsun.github.io/author/haoyu-sun.html">Haoyu sun</a>
+            | <time datetime="Sun 08 December 2019">Sun 08 December 2019</time>
+        </span>
+        <!-- TODO : Modified check -->
+            <span class="post-meta"> | Updated on Sun 08 December 2019</span>
+        
+            <div class="post-cover cover" style="background-image: url('https://raptorsun.github.io/theme/images/post-bg.jpg')">
+        
+      </div>
+    </header>    
+
+  <section id="wrapper">
+    <a class="hidden-close"></a>
+
+    <!-- Post content -->
+    <main class="content" role="main">
+        <article class="post">
+        <div class="inner">
+            <section class="post-content">
+                <p>Monitoring on log files is useful for overseeing application status and allows operators take neccessary actions to prevent incidents. However, sometimes it is hard to find a simple ready-to-use monitor for our specific use case.
+Here is a tutorial on how to build a very basic monitor on HTTP access logs using a few lines of Python codes.
+<a href="https://www.w3.org/Daemon/User/Config/Logging.html">HTTP Access logs</a> looks like the example below:</p>
+<div class="highlight"><pre><span></span><span class="mf">127.0.0.1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">frank</span><span class="w"> </span><span class="o">[</span><span class="n">10/Oct/2000:13:55:36 -0700</span><span class="o">]</span><span class="w"> </span><span class="ss">&quot;GET /apache_pb.gif HTTP/1.0&quot;</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="mi">2326</span><span class="w"> </span><span class="ss">&quot;http://www.example.com/start.html&quot;</span><span class="w"> </span><span class="ss">&quot;Mozilla/4.08 [en] (Win98; I ;Nav)&quot;</span><span class="w"></span>
+</pre></div>
+
+
+<h1>Overview</h1>
+<p>This monitor consists of 3 components:</p>
+<ol>
+<li>File Watcher</li>
+<li>Analyser/Aggregator</li>
+<li>User Interface</li>
+</ol>
+<p>The File Watchers read new lines from monitored files, parse the log line and put the extracted information as log items into a message queue dedicated to log influx.</p>
+<p>The Analyzer consume log items and update statistic metrics. It uses a memory segment shared with User Interface. When Analyzer finds out some critial metrics are above/below a certain threshold, the Analyzer send an alert item into the alert message queue. Which will be consumed by the User Interface.</p>
+<p>The User Interface present the metrics to user and show up alerts when it rises. This program uses a text based UI in the console, periodically update the widgets with statistical information fetched from the shared memory. If there is message in the alert queue, the alert status will change accordingly and shows alert messages in the UI.</p>
+<p>Each component uses a process dedicated to its own job. Information flows from File Watcher to Analyzer, then from Analyzer to UI.</p>
+<p><img alt="Architecture Schema" src="/images/http_monitor_architecture_schema.png"></p>
+<p>When starting the program, the main routine</p>
+<ol>
+<li>initialize message queues, shared memories</li>
+<li>spawn processes of file watcher, analyser and UI</li>
+<li>wait for processes terminate</li>
+</ol>
+<p>Here is the launching scripts:</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="o">....</span>
+    <span class="n">monitor</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span><span class="n">log_files</span><span class="p">,</span> <span class="n">threshold_aps</span><span class="p">)</span>
+    <span class="n">monitor</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+    <span class="n">monitor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">monitor</span><span class="o">.</span><span class="n">wait_for_finish</span><span class="p">()</span>
+</pre></div>
+
+
+<p>Now let's make the 3 components to monitor our log files, starting from File Watcher.</p>
+<h1>File Watcher</h1>
+<p>When creating watcher process, we pass the file to watch and the message queue to which it should send parsed metrics.</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Monitor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="o">....</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># watch files</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filenames</span><span class="p">:</span>
+            <span class="n">fw</span> <span class="o">=</span> <span class="n">FileWatcher</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">fw</span><span class="o">.</span><span class="n">watch</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_log_q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
+    <span class="o">....</span>
+</pre></div>
+
+
+<p>When file watcher is running, it reads new lines from wathced files, parse them into metrics and send them to message queue.
+One thing worth our attention is that when it has read the last line, next readline() will return an empty line. In this case we let it sleep a while and try another read later.</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FileWatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_READLINE_TIMEOUT</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_handle</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">err</span>
+
+    <span class="k">def</span> <span class="nf">readline</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">sleep_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_handle</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">DEFAULT_READLINE_SLEEP</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">line</span>
+
+    <span class="k">def</span> <span class="nf">watch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_queue</span><span class="p">,</span> <span class="n">running</span><span class="p">):</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">LogParser</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">running</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">remotehost</span><span class="p">,</span> <span class="n">rfc931</span><span class="p">,</span> <span class="n">authuser</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_line</span><span class="p">(</span>
+                <span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">section</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">section_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">log_item</span> <span class="o">=</span> <span class="n">LogItem</span><span class="p">(</span><span class="n">remotehost</span><span class="p">,</span> <span class="n">rfc931</span><span class="p">,</span> <span class="n">authuser</span><span class="p">,</span>
+                               <span class="n">date</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span>
+            <span class="n">log_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">log_item</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Now we have an influx of information, time to aggregate them into meaningful metrics.</p>
+<h1>Analyser/Aggregator</h1>
+<p>The Analyser takes individual metrics from the messages queue, aggregate them into metrics that we care and update the memory shared with UI process.
+Below is a snippet from the aggregate routine showing how the hit count is updated:</p>
+<ol>
+<li>aggregator receives a log metric object from the message que. This metric object is generate from an access, meaning we have a hit on a webpage.</li>
+<li>we increase the hit count</li>
+<li>if now is the time to update metrics, we update the shared memory <code>self._aggregated_statistics</code> using the new result.</li>
+</ol>
+<div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">....</span>
+        <span class="n">next_aggregate_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_frame_interval</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;next_aggregate_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">next_aggregate_time</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">log_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_q</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">LOG_QUEUE_TIMEOUT</span><span class="p">)</span>
+                <span class="n">frame_hit_count</span> <span class="o">=</span> <span class="n">frame_hit_count</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="o">....</span>
+            <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">log_item</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># aggregate results of frame</span>
+            <span class="k">if</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">next_aggregate_time</span><span class="p">:</span>
+                <span class="n">lps</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">frame_hit_count</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_interval</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;lps_frame&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lps</span>
+                <span class="o">....</span>
+
+                <span class="c1"># new frame</span>
+                <span class="n">frame_hit_count</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">frame_heat_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">next_aggregate_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_frame_interval</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;next_aggregate_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">next_aggregate_time</span>
+</pre></div>
+
+
+<p>Having the aggregated metrics, now we can present them to operators thorugh the User Interface.</p>
+<h1>User Interface</h1>
+<p>The User Interface get metrics from the shared memory and messages queues populated by the Analyser/Aggregator process. The final presentation can be a web page or simple terminal outputs. Here I use <a href="https://npyscreen.readthedocs.io/">npyscreen</a> package to build a Text UI, handy when using SSH terminal interface.</p>
+<p>A simple way to use <code>npyscreen</code> is by extending the <code>npyscreen.NPSAppManaged</code> class. Here we pass the shared memory <code>stats_dict</code> and the message queue receiving alerts in its <code>__init__</code> function.</p>
+<p>The main interface is a Form <code>Dashboard</code> class containing the widgets to show various metrics, added by the function <code>onStart</code>.</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MonitorUI</span><span class="p">(</span><span class="n">npyscreen</span><span class="o">.</span><span class="n">NPSAppManaged</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stats_dict</span><span class="o">=</span><span class="p">{},</span> <span class="n">alert_q</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats_dict</span> <span class="o">=</span> <span class="n">stats_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="n">running</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alert_q</span> <span class="o">=</span> <span class="n">alert_q</span>
+
+    <span class="k">def</span> <span class="nf">onStart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addForm</span><span class="p">(</span><span class="s1">&#39;MAIN&#39;</span><span class="p">,</span> <span class="n">Dashboard</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;HTTP Log Monitor&#39;</span><span class="p">,</span>
+                     <span class="n">stats</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats_dict</span><span class="p">,</span> <span class="n">alert_q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alert_q</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+
+
+<p>The <code>Dashboard</code> class mainly has to do 2 things: place widget at desired place (<code>create</code>) and update the values to display (<code>while_waiting</code>).
+After updating widgets' values in the function <code>while_waiting</code>, do not forget to explicitly calls its <code>display()</code> method to render the widget.</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Dashboard</span><span class="p">(</span><span class="n">npyscreen</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+    <span class="o">....</span>
+
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keypress_timeout</span> <span class="o">=</span> <span class="mi">10</span>
+
+        <span class="c1"># press Escape to quit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">how_exited_handers</span><span class="p">[</span><span class="n">npyscreen</span><span class="o">.</span><span class="n">wgwidget</span><span class="o">.</span><span class="n">EXITED_ESCAPE</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_application</span>
+
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">useable_space</span><span class="p">()</span>
+
+        <span class="n">height_lps_status_box</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">rely</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lps_box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">TrafficBox</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Traffic&#39;</span><span class="p">,</span> <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                 <span class="n">relx</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                 <span class="n">rely</span><span class="o">=</span><span class="n">rely</span><span class="p">,</span>
+                                 <span class="n">max_width</span><span class="o">=</span><span class="p">(</span><span class="n">width</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">4</span><span class="p">),</span>
+                                 <span class="n">max_height</span><span class="o">=</span><span class="n">height_lps_status_box</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lps_box</span><span class="o">.</span><span class="n">set_values</span><span class="p">(</span><span class="n">val_10s</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">val_2m</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">val_lifetime</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="o">....</span>
+
+    <span class="k">def</span> <span class="nf">while_waiting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lps_box</span><span class="o">.</span><span class="n">set_values</span><span class="p">(</span>
+            <span class="n">val_10s</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lps_frame&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">val_2m</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lps_scene&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">val_lifetime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lps_lifetime&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lps_box</span><span class="o">.</span><span class="n">display</span><span class="p">()</span>
+</pre></div>
+
+
+<h1>Launch</h1>
+<p>Now let's put these components together and launch the monitor.
+We use the <a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing</a> library in Python to run these 3 kinds of processes simultanously.</p>
+<ol>
+<li>create shared resources such as shared memory and message queue using <code>Manager</code> and <code>Queue</code></li>
+<li>create process context using entry function and arguments <code>Process(target=fw.watch, args=(self._log_q, self._running))</code></li>
+<li>start the process <code>process.start()</code></li>
+<li>let the parent process wait for children's termination <code>for proc in self._processes: proc.join()</code></li>
+</ol>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Manager</span>
+<span class="kn">from</span> <span class="nn">file_watcher</span> <span class="kn">import</span> <span class="n">FileWatcher</span>
+<span class="kn">from</span> <span class="nn">user_interface</span> <span class="kn">import</span> <span class="n">MonitorUI</span>
+<span class="o">....</span>
+
+<span class="k">class</span> <span class="nc">Monitor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">threshold_lps</span><span class="p">,</span>
+                 <span class="n">frame_interval</span><span class="o">=</span><span class="n">REFRESH_INTERVAL</span><span class="p">,</span>
+                 <span class="n">scene_interval</span><span class="o">=</span><span class="n">ALERT_WINDOW</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filenames</span> <span class="o">=</span> <span class="n">filenames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resource_manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alert_q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="n">Value</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alert_threshold</span> <span class="o">=</span> <span class="n">Value</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="n">threshold_lps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_manager</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span> <span class="o">=</span> <span class="n">MonitorUI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_alert_q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="p">)</span>
+        <span class="o">....</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># watch files</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filenames</span><span class="p">:</span>
+            <span class="n">fw</span> <span class="o">=</span> <span class="n">FileWatcher</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">fw</span><span class="o">.</span><span class="n">watch</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_log_q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
+        <span class="c1"># aggregate statistics</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aggregate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
+        <span class="c1"># UI</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">run</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;next_aggregate_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">:</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">wait_for_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">:</span>
+            <span class="n">proc</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">....</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="o">....</span>
+    <span class="n">monitor</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span><span class="n">log_files</span><span class="p">,</span> <span class="n">threshold_aps</span><span class="p">)</span>
+    <span class="n">monitor</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+    <span class="n">monitor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">monitor</span><span class="o">.</span><span class="n">wait_for_finish</span><span class="p">()</span>
+</pre></div>
+
+
+<h1>Sliding Window</h1>
+<p>Many metrics are calculated using a sliding window over a subset of most recent N minutes or last N samples. This has many implementations. Here is one of them, using a circular buffer, a metaphor of frame and scene.</p>
+<p>Imagine that the Analyzer is required to calculate average traffic during a sliding time window of 2 minutes and the average traffic for last 10 seconds. This is quite similar to filming a video. We can consider the statistics collected every 10 seconds as a frame and the sliding time windows of 2 minutes as a scene. A scene is composed of multiple frames in a movie, so is the 2 minute statistics composed as an aggregation of 12 times of statistics over 10 seconds.</p>
+<p>Thus we use a circular buffer to keep every frame containing 10s of statistics in the scene of 2 minutes. Thus it contains 12 items in the buffer (2min / 10s = 12). For calculating average traffic over 2 minutes, we just need to sum up the access counter of each item in the buffer and then divided by duration of 2 minutes. Any metric can be calculated this way, as long as it is an aggregation function.</p>
+<p>Here is the code calculating traffic for last 10 seconds, 2 minutes and since the beginning.</p>
+<div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">total_hit_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">frame_hit_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># circular buffer for hit counter in alert window</span>
+        <span class="n">frames_in_scene_hit_counts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_frames_per_scene</span><span class="p">)]</span>
+        <span class="n">frame_index_in_scene</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span>
+        <span class="n">alter_start_time</span> <span class="o">=</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scene_interval</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;lps_frame&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;lps_scene&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;lps_lifetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">next_aggregate_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_frame_interval</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">log_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_q</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">LOG_QUEUE_TIMEOUT</span><span class="p">)</span>
+                <span class="n">frame_hit_count</span> <span class="o">=</span> <span class="n">frame_hit_count</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">hit_count</span> <span class="o">=</span> <span class="n">frame_heat_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">log_item</span><span class="o">.</span><span class="n">section</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">log_item</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># aggregate results of frame</span>
+            <span class="k">if</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">next_aggregate_time</span><span class="p">:</span>
+                <span class="n">lps</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">frame_hit_count</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_interval</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;lps_frame&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lps</span>
+                <span class="n">total_hit_count</span> <span class="o">=</span> <span class="n">total_hit_count</span> <span class="o">+</span> <span class="n">frame_hit_count</span>
+
+                <span class="n">time_delta</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+                <span class="n">total_lps</span> <span class="o">=</span> <span class="n">total_hit_count</span> <span class="o">/</span> <span class="n">time_delta</span><span class="o">.</span><span class="n">seconds</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;lps_lifetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_lps</span>
+
+                <span class="n">frames_in_scene_hit_counts</span><span class="p">[</span><span class="n">frame_index_in_scene</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame_hit_count</span>
+                <span class="n">frame_index_in_scene</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">frame_index_in_scene</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frames_per_scene</span>
+                <span class="k">if</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">alter_start_time</span><span class="p">:</span>
+                    <span class="n">scene_lps</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">frames_in_scene_hit_counts</span><span class="p">)</span> <span class="o">*</span> \
+                        <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_interval</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">scene_lps</span> <span class="o">=</span> <span class="n">total_lps</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_aggregated_statistics</span><span class="p">[</span><span class="s1">&#39;lps_scene&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scene_lps</span>
+
+                <span class="c1"># new frame</span>
+                <span class="n">frame_hit_count</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">next_aggregate_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_frame_interval</span><span class="p">)</span>
+</pre></div>
+
+
+<h1>References</h1>
+<ul>
+<li>The code of example can be found on <a href="https://github.com/raptorsun/http_log_monitor">my GitHub repository</a>.</li>
+<li>Python documentation on <a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing</a></li>
+<li><a href="http://npyscreen.readthedocs.io/">npyscreen package</a></li>
+</ul>
+            </section>
+
+            <section class="post-info">
+                <div class="post-share">
+                    <a class="twitter" href="https://twitter.com/share?text=How To Make a Log Monitor&amp;url=https://raptorsun.github.io/howtopymonitor.html" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="ic ic-twitter"></i><span class="hidden">Twitter</span>
+                    </a>
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://raptorsun.github.io/howtopymonitor.html" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="ic ic-facebook"></i><span class="hidden">Facebook</span>
+                    </a>
+                    <a class="googleplus" href="https://plus.google.com/share?url=https://raptorsun.github.io/howtopymonitor.html" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="ic ic-googleplus"></i><span class="hidden">Google+</span>
+                    </a>
+                    <div class="clear"></div>
+                </div>
+
+
+                <div class="clear"></div>
+
+ 
+
+                </section>
+
+
+                <aside class="post-nav">
+                    <div class="clear"></div>
+                </aside>
+
+            </div>
+        </article>
+    </main>
+      <!-- TODO : Body class -->
+    <div id="body-class" style="display: none;" class=""></div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section class="credits">
+          <span class="credits-theme">Theme <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a></span>
+          <span class="credits-software">Published with <a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a></span>
+        </section>
+      </div>
+    </footer>
+  </section>
+
+  <script type="text/javascript" src="https://raptorsun.github.io/theme/js/script.js"></script>
+
+</body>
+</html>

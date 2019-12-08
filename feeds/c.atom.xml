@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Bobcat - C++</title><link href="https://raptorsun.github.io/" rel="alternate"></link><link href="https://raptorsun.github.io/feeds/c.atom.xml" rel="self"></link><id>https://raptorsun.github.io/</id><updated>2019-06-17T00:00:00+02:00</updated><entry><title>How C++ Lambda Function Is Compiled</title><link href="https://raptorsun.github.io/cpplambdacpml.html" rel="alternate"></link><published>2019-06-17T00:00:00+02:00</published><updated>2019-06-17T00:00:00+02:00</updated><author><name>Haoyu Sun</name></author><id>tag:raptorsun.github.io,2019-06-17:/cpplambdacpml.html</id><summary type="html">&lt;p&gt;&lt;a href="https://en.cppreference.com/w/cpp/language/lambda"&gt;Lambda function&lt;/a&gt; is a convenient way of defining an anonymous function in the place where it is invoked or assigned as an argurment or variable.  It is largely used to pass a short stateless function to an algorithm (comparison to sort algorithm), and as a callback from asynchronous methods. I …&lt;/p&gt;</summary><content type="html">&lt;p&gt;&lt;a href="https://en.cppreference.com/w/cpp/language/lambda"&gt;Lambda function&lt;/a&gt; is a convenient way of defining an anonymous function in the place where it is invoked or assigned as an argurment or variable.  It is largely used to pass a short stateless function to an algorithm (comparison to sort algorithm), and as a callback from asynchronous methods. I wonder how lambda functions are compiled. Are they functions with a random name? Are they inline functions expressing simple logics?&lt;/p&gt;
+&lt;p&gt;Lets start with a minimalistic case.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;argc&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;[])&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;[]()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="p"&gt;();&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;It calls a lambda function which does nothing else than returning an integer 6. The corresponding assembly shows that these codes generate 2 functions: the main and the lambda function.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="na"&gt;.section&lt;/span&gt;    &lt;span class="no"&gt;__TEXT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="no"&gt;__text&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="no"&gt;regular&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="no"&gt;pure_instructions&lt;/span&gt;
+    &lt;span class="na"&gt;.build_version&lt;/span&gt; &lt;span class="no"&gt;macos&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;14&lt;/span&gt;    &lt;span class="no"&gt;sdk_version&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;14&lt;/span&gt;
+    &lt;span class="na"&gt;.globl&lt;/span&gt;  &lt;span class="no"&gt;_main&lt;/span&gt;                   &lt;span class="c"&gt;## -- Begin function main&lt;/span&gt;
+    &lt;span class="na"&gt;.p2align&lt;/span&gt;    &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0x90&lt;/span&gt;
+&lt;span class="nl"&gt;_main:&lt;/span&gt;                                  &lt;span class="c"&gt;## @main&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_startproc&lt;/span&gt;
+&lt;span class="c"&gt;## %bb.0:&lt;/span&gt;
+    &lt;span class="nf"&gt;pushq&lt;/span&gt;   &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_offset&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_offset&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rsp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_register&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;subq&lt;/span&gt;    &lt;span class="no"&gt;$32&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%rsp&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="no"&gt;$0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="nv"&gt;%edi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rsi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;leaq&lt;/span&gt;    &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%rdi&lt;/span&gt;
+    &lt;span class="nf"&gt;callq&lt;/span&gt;   &lt;span class="no"&gt;__ZZ4mainENK3$_0clEv&lt;/span&gt;
+    &lt;span class="nf"&gt;addq&lt;/span&gt;    &lt;span class="no"&gt;$32&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%rsp&lt;/span&gt;
+    &lt;span class="nf"&gt;popq&lt;/span&gt;    &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;retq&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_endproc&lt;/span&gt;
+                                        &lt;span class="c"&gt;## -- End function&lt;/span&gt;
+    &lt;span class="na"&gt;.p2align&lt;/span&gt;    &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0x90&lt;/span&gt;         &lt;span class="c"&gt;## -- Begin function _ZZ4mainENK3$_0clEv  (lambda function)&lt;/span&gt;
+&lt;span class="nl"&gt;__ZZ4mainENK3$_0clEv:&lt;/span&gt;                   &lt;span class="c"&gt;## @&amp;quot;_ZZ4mainENK3$_0clEv&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_startproc&lt;/span&gt;
+&lt;span class="c"&gt;## %bb.0:&lt;/span&gt;
+    &lt;span class="nf"&gt;pushq&lt;/span&gt;   &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_offset&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_offset&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rsp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_register&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rdi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="no"&gt;$6&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%eax&lt;/span&gt;
+    &lt;span class="nf"&gt;popq&lt;/span&gt;    &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;retq&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_endproc&lt;/span&gt;
+                                        &lt;span class="c"&gt;## -- End function&lt;/span&gt;
+
+&lt;span class="na"&gt;.subsections_via_symbols&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The "anonymous" function does have a name, which is _ZZ4mainENK3$_0clEv. Let's demangle it to see what does it mean.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;➜  lambda_cpp nm lambda.out | c++filt&lt;/span&gt;
+&lt;span class="err"&gt;0000000100000fa0 unsigned short main::$_0::operator()() const&lt;/span&gt;
+&lt;span class="err"&gt;0000000100000000 T __mh_execute_header&lt;/span&gt;
+&lt;span class="err"&gt;0000000100000f70 T _main&lt;/span&gt;
+&lt;span class="err"&gt;                 U dyld_stub_binder&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;It is defined as a const function under the namespace of "main", returing an unsigned short, which is obviously deduced from the constant "6". The name "$_0::operator()()" seems like a wrapper class "$0" with a function "operator()()". The name $_0 may suggest a auto-increasing key for each lambda function in the same scope. Lets try define multiple lambda function and see how they are named.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;argc&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;[])&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;auto&lt;/span&gt; &lt;span class="n"&gt;funcA&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;};&lt;/span&gt;
+
+    &lt;span class="k"&gt;auto&lt;/span&gt; &lt;span class="n"&gt;funcB&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;};&lt;/span&gt;
+
+    &lt;span class="k"&gt;auto&lt;/span&gt; &lt;span class="n"&gt;funcC&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;};&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;funcA&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;funcB&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;funcC&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This time we got main::$_[0-2]::operator()() functions. That wrapper class is in fact a number. The naming convention is under the namespace where it is defined, a wrapper class with an increasing number to disinguish one from another, then the function itself "operator ()" with its arguments' list.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;0000000100000f80 unsigned short main::$_0::operator()() const&lt;/span&gt;
+&lt;span class="err"&gt;0000000100000f90 unsigned short main::$_1::operator()() const&lt;/span&gt;
+&lt;span class="err"&gt;0000000100000fa0 unsigned short main::$_2::operator()() const&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now let's try adding parameters into the lambda function, starting with the capture clause "[]". We put a local variable into the capture clause so that it can be used inside the lambda function. In this example we use the copy capture clause, which is the default behavior.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;argc&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;[])&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;var&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;auto&lt;/span&gt; &lt;span class="n"&gt;funcA&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;]()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;};&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;funcA&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;From the output code we can see in this case it is exactly the same sequence as a regular function call: copy local variable into stack, move the stack upward and then call the function.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="no"&gt;$7&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%edi&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="nv"&gt;%edi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;leaq&lt;/span&gt;    &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%rdi&lt;/span&gt;
+    &lt;span class="nf"&gt;callq&lt;/span&gt;   &lt;span class="no"&gt;__ZZ4mainENK3$_0clEv&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Meanwhile in lambda function has just a normal function body, getting the argument from stack and copy it into the return register.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="na"&gt;.p2align&lt;/span&gt;    &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0x90&lt;/span&gt;         &lt;span class="c"&gt;## -- Begin function _ZZ4mainENK3$_0clEv&lt;/span&gt;
+&lt;span class="nl"&gt;__ZZ4mainENK3$_0clEv:&lt;/span&gt;                   &lt;span class="c"&gt;## @&amp;quot;_ZZ4mainENK3$_0clEv&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_startproc&lt;/span&gt;
+&lt;span class="c"&gt;## %bb.0:&lt;/span&gt;
+    &lt;span class="nf"&gt;pushq&lt;/span&gt;   &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_offset&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_offset&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rsp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_register&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rdi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%rdi&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rdi&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%eax&lt;/span&gt;
+    &lt;span class="nf"&gt;popq&lt;/span&gt;    &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;retq&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_endproc&lt;/span&gt;
+                                        &lt;span class="c"&gt;## -- End function&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;By changing the capture clause to reference mode, we get almost the same code but this time it is the address of variable pushed into the stack.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="k"&gt;auto&lt;/span&gt; &lt;span class="n"&gt;funcA&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;]()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;};&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="na"&gt;...&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="no"&gt;$7&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;leaq&lt;/span&gt;    &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%rsi&lt;/span&gt;     &lt;span class="c"&gt;## address of &amp;quot;var&amp;quot; into %rsi&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rsi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;32&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;leaq&lt;/span&gt;    &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;32&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%rdi&lt;/span&gt;
+    &lt;span class="nf"&gt;callq&lt;/span&gt;   &lt;span class="no"&gt;__ZZ4mainENK3$_0clEv&lt;/span&gt;
+    &lt;span class="na"&gt;...&lt;/span&gt;
+
+    &lt;span class="na"&gt;.p2align&lt;/span&gt;    &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0x90&lt;/span&gt;         &lt;span class="c"&gt;## -- Begin function _ZZ4mainENK3$_0clEv&lt;/span&gt;
+&lt;span class="nl"&gt;__ZZ4mainENK3$_0clEv:&lt;/span&gt;                   &lt;span class="c"&gt;## @&amp;quot;_ZZ4mainENK3$_0clEv&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_startproc&lt;/span&gt;
+&lt;span class="c"&gt;## %bb.0:&lt;/span&gt;
+    &lt;span class="nf"&gt;pushq&lt;/span&gt;   &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_offset&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_offset&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rsp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_register&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rdi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%rdi&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rdi&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%rdi&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rdi&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;%eax&lt;/span&gt;
+    &lt;span class="nf"&gt;popq&lt;/span&gt;    &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;retq&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_endproc&lt;/span&gt;
+                                        &lt;span class="c"&gt;## -- End function&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now let's try constexpr on lambda expression. The constexpr objects will be evaluated during compilation time and reduced to a constant in the final code. Let's see.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;argc&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;[])&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;auto&lt;/span&gt; &lt;span class="n"&gt;funcA&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="p"&gt;](&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;constexpr&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;};&lt;/span&gt;
+    &lt;span class="k"&gt;constexpr&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;funcA&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The lambda function is decalred as constexpr, thus during compilation time, the result of funcA(7) can be calculated as 10. The code is then equivalent to:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;argc&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;[])&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;constexpr&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;That leads to an integer 10 in stack &lt;code&gt;movl $10, -28(%rbp)&lt;/code&gt; and a direct return of 10 &lt;code&gt;movl  $10, %eax&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="na"&gt;.section&lt;/span&gt;    &lt;span class="no"&gt;__TEXT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="no"&gt;__text&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="no"&gt;regular&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="no"&gt;pure_instructions&lt;/span&gt;
+    &lt;span class="na"&gt;.build_version&lt;/span&gt; &lt;span class="no"&gt;macos&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;14&lt;/span&gt;    &lt;span class="no"&gt;sdk_version&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;14&lt;/span&gt;
+    &lt;span class="na"&gt;.globl&lt;/span&gt;  &lt;span class="no"&gt;_main&lt;/span&gt;                   &lt;span class="c"&gt;## -- Begin function main&lt;/span&gt;
+    &lt;span class="na"&gt;.p2align&lt;/span&gt;    &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0x90&lt;/span&gt;
+&lt;span class="nl"&gt;_main:&lt;/span&gt;                                  &lt;span class="c"&gt;## @main&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_startproc&lt;/span&gt;
+&lt;span class="c"&gt;## %bb.0:&lt;/span&gt;
+    &lt;span class="nf"&gt;pushq&lt;/span&gt;   &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_offset&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_offset&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rsp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_def_cfa_register&lt;/span&gt; &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="no"&gt;$0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="nv"&gt;%edi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movq&lt;/span&gt;    &lt;span class="nv"&gt;%rsi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="no"&gt;$10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;28&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;%rbp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt;    &lt;span class="no"&gt;$10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%eax&lt;/span&gt;
+    &lt;span class="nf"&gt;popq&lt;/span&gt;    &lt;span class="nv"&gt;%rbp&lt;/span&gt;
+    &lt;span class="nf"&gt;retq&lt;/span&gt;
+    &lt;span class="na"&gt;.cfi_endproc&lt;/span&gt;
+                                        &lt;span class="c"&gt;## -- End function&lt;/span&gt;
+
+&lt;span class="na"&gt;.subsections_via_symbols&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</content><category term="C++"></category></entry></feed>

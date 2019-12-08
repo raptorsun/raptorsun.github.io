@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="english">
+<html lang="en">
 
 <head>
       <meta charset="utf-8">
@@ -17,6 +17,8 @@
   <link href="https://raptorsun.github.io" rel="canonical" />
 
   <!-- Feed -->
+        <link href="https://raptorsun.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Bobcat Full Atom Feed" />
+          <link href="https://raptorsun.github.io/feeds/c.atom.xml" type="application/atom+xml" rel="alternate" title="Bobcat Categories Atom Feed" />
 
   <link href="https://raptorsun.github.io/theme/css/style.css" type="text/css" rel="stylesheet" />
 
@@ -70,6 +72,7 @@
     <ul>
 
                   <li class="nav-c active" role="presentation"><a href="https://raptorsun.github.io/category/c.html">C++</a></li>
+                  <li role="presentation"><a href="https://raptorsun.github.io/category/python.html">Python</a></li>
 
     </ul>
   </div>
@@ -134,9 +137,9 @@
 <span class="c">## %bb.0:</span>
     <span class="nf">pushq</span>   <span class="nv">%rbp</span>
     <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
-    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="nv">%rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
     <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
-    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="nv">%rbp</span>
     <span class="nf">subq</span>    <span class="no">$32</span><span class="p">,</span> <span class="nv">%rsp</span>
     <span class="nf">movl</span>    <span class="no">$0</span><span class="p">,</span> <span class="p">-</span><span class="mi">4</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
     <span class="nf">movl</span>    <span class="nv">%edi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
@@ -154,9 +157,9 @@
 <span class="c">## %bb.0:</span>
     <span class="nf">pushq</span>   <span class="nv">%rbp</span>
     <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
-    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="nv">%rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
     <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
-    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="nv">%rbp</span>
     <span class="nf">movq</span>    <span class="nv">%rdi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
     <span class="nf">movl</span>    <span class="no">$6</span><span class="p">,</span> <span class="nv">%eax</span>
     <span class="nf">popq</span>    <span class="nv">%rbp</span>
@@ -169,11 +172,11 @@
 
 
 <p>The "anonymous" function does have a name, which is _ZZ4mainENK3$_0clEv. Let's demangle it to see what does it mean.</p>
-<div class="highlight"><pre><span></span>➜  lambda_cpp nm lambda.out | c++filt
-0000000100000fa0 unsigned short main::$_0::operator()() const
-0000000100000000 T __mh_execute_header
-0000000100000f70 T _main
-                 U dyld_stub_binder
+<div class="highlight"><pre><span></span><span class="err">➜  lambda_cpp nm lambda.out | c++filt</span>
+<span class="err">0000000100000fa0 unsigned short main::$_0::operator()() const</span>
+<span class="err">0000000100000000 T __mh_execute_header</span>
+<span class="err">0000000100000f70 T _main</span>
+<span class="err">                 U dyld_stub_binder</span>
 </pre></div>
 
 
@@ -198,9 +201,9 @@
 
 
 <p>This time we got main::$_[0-2]::operator()() functions. That wrapper class is in fact a number. The naming convention is under the namespace where it is defined, a wrapper class with an increasing number to disinguish one from another, then the function itself "operator ()" with its arguments' list.</p>
-<div class="highlight"><pre><span></span>0000000100000f80 unsigned short main::$_0::operator()() const
-0000000100000f90 unsigned short main::$_1::operator()() const
-0000000100000fa0 unsigned short main::$_2::operator()() const
+<div class="highlight"><pre><span></span><span class="err">0000000100000f80 unsigned short main::$_0::operator()() const</span>
+<span class="err">0000000100000f90 unsigned short main::$_1::operator()() const</span>
+<span class="err">0000000100000fa0 unsigned short main::$_2::operator()() const</span>
 </pre></div>
 
 
@@ -232,9 +235,9 @@
 <span class="c">## %bb.0:</span>
     <span class="nf">pushq</span>   <span class="nv">%rbp</span>
     <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
-    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="nv">%rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
     <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
-    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="nv">%rbp</span>
     <span class="nf">movq</span>    <span class="nv">%rdi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
     <span class="nf">movq</span>    <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rdi</span>
     <span class="nf">movl</span>    <span class="p">(</span><span class="nv">%rdi</span><span class="p">),</span> <span class="nv">%eax</span>
@@ -266,9 +269,9 @@
 <span class="c">## %bb.0:</span>
     <span class="nf">pushq</span>   <span class="nv">%rbp</span>
     <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
-    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="nv">%rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
     <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
-    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="nv">%rbp</span>
     <span class="nf">movq</span>    <span class="nv">%rdi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
     <span class="nf">movq</span>    <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rdi</span>
     <span class="nf">movq</span>    <span class="p">(</span><span class="nv">%rdi</span><span class="p">),</span> <span class="nv">%rdi</span>
@@ -312,9 +315,9 @@
 <span class="c">## %bb.0:</span>
     <span class="nf">pushq</span>   <span class="nv">%rbp</span>
     <span class="na">.cfi_def_cfa_offset</span> <span class="mi">16</span>
-    <span class="na">.cfi_offset</span> <span class="err">%</span><span class="no">rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
+    <span class="na">.cfi_offset</span> <span class="nv">%rbp</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span>
     <span class="nf">movq</span>    <span class="nv">%rsp</span><span class="p">,</span> <span class="nv">%rbp</span>
-    <span class="na">.cfi_def_cfa_register</span> <span class="err">%</span><span class="no">rbp</span>
+    <span class="na">.cfi_def_cfa_register</span> <span class="nv">%rbp</span>
     <span class="nf">movl</span>    <span class="no">$0</span><span class="p">,</span> <span class="p">-</span><span class="mi">4</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
     <span class="nf">movl</span>    <span class="nv">%edi</span><span class="p">,</span> <span class="p">-</span><span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
     <span class="nf">movq</span>    <span class="nv">%rsi</span><span class="p">,</span> <span class="p">-</span><span class="mi">16</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
@@ -360,7 +363,7 @@
     </main>
       <!-- TODO : Body class -->
     <div id="body-class" style="display: none;" class=""></div>
-  
+
     <footer id="footer">
       <div class="inner">
         <section class="credits">
@@ -372,6 +375,6 @@
   </section>
 
   <script type="text/javascript" src="https://raptorsun.github.io/theme/js/script.js"></script>
-  
+
 </body>
 </html>
